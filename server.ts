@@ -1,0 +1,26 @@
+import * as dotenv from 'dotenv';
+import Koa from 'koa';
+import { koaBody } from 'koa-body';
+import cors from '@koa/cors';
+import { usdz2glb } from './routes/usdz2glbRouter';
+
+const app = new Koa({
+    proxy : true,
+});
+
+app.use(cors({
+    'origin' : '*',
+}));
+
+app.use(koaBody({
+    multipart : true,
+}));
+
+app.use(usdz2glb.routes()).use(usdz2glb.allowedMethods());
+
+app.on('error', (err: Error) => {
+    console.error(err);
+    console.error(err.stack);
+});
+
+app.listen(8080, () => console.log('Server is running on port 8080'));

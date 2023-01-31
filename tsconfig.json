@@ -1,0 +1,22 @@
+{
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules"],
+  "compilerOptions": {
+    "target": "ES5",
+    "module": "commonjs",
+    "lib": ["ES5","ES6"],
+    "sourceMap": true,
+    "outDir": "build",
+    "strict": true,
+    "allowJs" : true,
+    "baseUrl": "./",
+    "typeRoots" : ["./@types", "./node_modules/@types"],
+    "paths": {
+      "*": [
+        "types/*"
+      ]
+    },
+    "esModuleInterop": true,
+    "experimentalDecorators": true
+  }
+}
