@@ -33,7 +33,7 @@ const usdz2glb = router.post('/usdz2glb', async (ctx: any, next: Next) => {
                 console.log(data.toString());
                 ctx.status = 200;
                 ctx.response.body = { message : 'Ok.' };
-                const glbFilePath = `../../tmp/${glbFileName}`;
+                const glbFilePath = `/home/ubuntu/koa-usdz2glb/tmp/${glbFileName}`;
                 await uploadFile(`${convertName[0]}/${glbFileName}`, glbFilePath);
                 await uploadFile(`${convertName[0]}/${usdzFileName}`, usdzFilePath);
             }
