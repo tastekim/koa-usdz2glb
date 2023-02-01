@@ -2,7 +2,7 @@ import 'dotenv/config';
 import Koa from 'koa';
 import { koaBody } from 'koa-body';
 import cors from '@koa/cors';
-import { usdz2glb } from './routes/usdz2glbRouter';
+import { usdz2glb } from './src/routes/usdz2glbRouter';
 
 const app = new Koa({
     proxy : true,

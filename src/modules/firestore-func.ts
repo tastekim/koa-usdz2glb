@@ -1,0 +1,104 @@
+import { firestore } from 'firebase-admin';
+import WriteResult = firestore.WriteResult;
+import { db } from '../repositories/firestore';
+
+// 상품명으로 객체화해서 DB 저장
+export async function setData(productName: string, productDesc: string, glbUrl: string, usdzUrl: string) {
+    try {
+        const collection = db.collection('products');
+        const docRef = collection.doc();
+        return await docRef.set({
+            name : productName,
+            desc : productDesc,
+            glb_url : glbUrl,
+            usdz_url : usdzUrl,
+            created_at : Date.now(),
+        });
+
+    } catch (err: unknown) {
+        if (err instanceof Error) {
+            return err;
+        }
+    }
+}
+
+// product 내용 조회
+export async function getData(productId: string) {
+    try {
+        const collection = db.collection('products');
+        const docRef = collection.doc(productId);
+        const doc = await docRef.get();
+        if (!doc.exists) {
+            throw new Error('Product does not exist');
+        }
+        const data = doc.data();
+        return {
+            id : doc.id,
+            data : data,
+        };
+    } catch (err: unknown) {
+        if (err instanceof Error) {
+            return err;
+        }
+    }
+}
+
+// 데이터 수정
+export async function updateData(newData: any) {
+    try {
+        const collection = db.collection('products');
+        const docRef = collection.doc(newData.productName);
+        const doc = await docRef.get();
+        if (!doc.exists) {
+            throw new Error('Product does not exist');
+        }
+
+        let updateData: any = {};
+        for (const prop in newData) {
+            if (prop !== 'productName') updateData[prop] = newData[prop];
+        }
+
+        return await docRef.update(updateData);
+    } catch (err: unknown) {
+        if (err instanceof Error) {
+            return err;
+        }
+    }
+}
+
+// 데이터 삭제
+export async function deleteData(productId: string) {
+    try {
+        const collection = db.collection('products');
+        const docRef = collection.doc(productId);
+        const doc = await docRef.get();
+        if (!doc.exists) {
+            throw new Error('Product does not exist');
+        }
+        return await docRef.delete()
+            .then((s: WriteResult) => s);
+    } catch (err: unknown) {
+        if (err instanceof Error) {
+            return err;
+        }
+    }
+}
+
+// 데이터 전체 조회
+export async function getAllData() {
+    try {
+        const collection = db.collection('products');
+        const docs = await collection.get();
+        let dataArr: object[] = [];
+        docs.forEach((d: any) => {
+            let id = d.id;
+            let data = d.data();
+            dataArr.push({ id, data });
+        });
+        return dataArr;
+    } catch (err: unknown) {
+        if (err instanceof Error) {
+            return err;
+        }
+    }
+}
