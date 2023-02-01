@@ -2,6 +2,7 @@ import { Context, Next } from 'koa';
 import koaBody from 'koa-body';
 import Router from '@koa/router';
 import { spawn } from 'child_process';
+import { resolve } from 'dns';
 
 const router = new Router();
 
@@ -14,17 +15,31 @@ const usdz2glb = router.post('/usdz2glb', async (ctx: any, next: Next) => {
         const convertName = usdzFileName.split('.');
         convertName[1] = 'glb';
         const glbFileName = convertName.join('.');
-        const usdz2glbConvertProcess = spawn('python3', ['usdz2glb.py', filePath, glbFileName]);
-        usdz2glbConvertProcess.stdout.on('data', (data: Buffer) => {
-            console.log(data.toString());
-            ctx.status = 200;
-            ctx.response.body ={message: 'Success'}
-        })
-        usdz2glbConvertProcess.stderr.on('data', (data: Buffer) => {
-            console.log(data.toString());
-            ctx.status = 500;
-            ctx.response.body ={message: 'usdz2glb.py failed'}
-        })
+
+        // child_process 가 끝난 후에 ctx.response 할 수 있게 Promise 로 실행.
+        await new Promise((resolve, reject) => {
+            const usdz2glbConvertProcess = spawn('python3', ['usdz2glb.py', filePath, glbFileName]);
+            usdz2glbConvertProcess.stdout.on('data', (data: Buffer) => resolve(data));
+            usdz2glbConvertProcess.stderr.on('data', (data: Buffer) => reject(data));
+        }).then((data) => {
+            if(data instanceof Buffer) {
+                console.log(data.toString());
+                ctx.status = 200;
+                ctx.response.body = { message : 'Ok.' };
+            }
+        });
+
+        // const usdz2glbConvertProcess = spawn('python3', ['usdz2glb.py', filePath, glbFileName]);
+        // usdz2glbConvertProcess.stdout.on('data', (data: Buffer) => {
+        //     console.log(data.toString());
+        //     ctx.status = 200;
+        //     ctx.response.body ={message: 'Success'}
+        // })
+        // usdz2glbConvertProcess.stderr.on('data', (data: Buffer) => {
+        //     console.log(data.toString());
+        //     ctx.status = 500;
+        //     ctx.response.body ={message: 'usdz2glb.py failed'}
+        // })
         await next();
     } catch (err) {
         if (err instanceof Error) {
