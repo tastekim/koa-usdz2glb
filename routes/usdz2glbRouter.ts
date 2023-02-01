@@ -7,7 +7,8 @@ const router = new Router();
 
 const usdz2glb = router.post('/usdz2glb', async (ctx: any, next: Next) => {
     try {
-        const filePath = ctx.request.files.file.filepath; // 업로드하는 파일의 경로
+        console.log(process.env.MY_IP);
+        const usdzFilePath = ctx.request.files.file.filepath; // 업로드하는 파일의 경로
         const usdzFileName = ctx.request.files.file.originalFilename; // 업로드하는 usdz 파일 이름
 
         // formdata validation.
@@ -23,7 +24,7 @@ const usdz2glb = router.post('/usdz2glb', async (ctx: any, next: Next) => {
 
         // child_process 가 끝난 후에 ctx.response 할 수 있게 Promise 로 실행.
         await new Promise((resolve, reject) => {
-            const usdz2glbConvertProcess = spawn('python3', ['usdz2glb.py', filePath, glbFileName]);
+            const usdz2glbConvertProcess = spawn('python3', ['usdz2glb.py', usdzFilePath, glbFileName]);
             usdz2glbConvertProcess.stdout.on('data', (data: Buffer) => resolve(data));
             usdz2glbConvertProcess.stderr.on('data', (data: Buffer) => reject(data));
         }).then((data) => {
@@ -31,12 +32,20 @@ const usdz2glb = router.post('/usdz2glb', async (ctx: any, next: Next) => {
                 console.log(data.toString());
                 ctx.status = 200;
                 ctx.response.body = { message : 'Ok.' };
+                exec(`sh uploadFiles.sh ${process.env.MY_IP} ${glbFileName} ${usdzFilePath}`, (error, stdout, stderr) => {
+                    if (error) {
+                        console.error(error);
+                    } else {
+                        console.log(stdout);
+                        console.log(stderr);
+                        exec('sh clearTmp.sh')
+                    }
+                })
             }
         }).catch((stderr) => {
             console.log(stderr.toString());
             ctx.status = 500;
             ctx.response.body = { message : 'failed.' };
-            exec('sh clearTmp.sh')
         });
 
         // const usdz2glbConvertProcess = spawn('python3', ['usdz2glb.py', filePath, glbFileName]);
