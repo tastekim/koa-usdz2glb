@@ -49,7 +49,6 @@ const usdz2glb = router.post('/', async (ctx: any, next: Next) => {
                 }
                 exec('sh clearTmp.sh');
             }
-            await next();
         }).catch((stderr) => {
             console.log(stderr.toString());
             ctx.status = 500;
