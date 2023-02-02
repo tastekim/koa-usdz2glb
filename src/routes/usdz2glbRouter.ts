@@ -25,6 +25,7 @@ const usdz2glb = router.post('/usdz2glb', async (ctx: any, next: Next) => {
 
         // child_process 가 끝난 후에 ctx.response 할 수 있게 Promise 로 실행.
         await new Promise((resolve, reject) => {
+            // usdz to glb Convert
             const usdz2glbConvertProcess = spawn('python3', ['usdz2glb.py', usdzFilePath, glbFileName]);
             usdz2glbConvertProcess.stdout.on('data', (data: Buffer) => resolve(data));
             usdz2glbConvertProcess.stderr.on('data', (data: Buffer) => reject(data));
@@ -33,9 +34,10 @@ const usdz2glb = router.post('/usdz2glb', async (ctx: any, next: Next) => {
                 console.log(data.toString());
                 ctx.status = 200;
                 ctx.response.body = { message : 'Ok.' };
-                const glbFilePath = `/home/ubuntu/koa-usdz2glb/tmp/${glbFileName}`;
+                const glbFilePath = `${process.env.SAVEPATH}${glbFileName}`;
                 await uploadFile(`${convertName[0]}/${glbFileName}`, glbFilePath);
                 await uploadFile(`${convertName[0]}/${usdzFileName}`, usdzFilePath);
+                exec('sh clearTmp.sh');
             }
         }).catch((stderr) => {
             console.log(stderr.toString());
