@@ -4,9 +4,11 @@ import Router from '@koa/router';
 import { spawn, exec } from 'child_process';
 import { createDoc, uploadFile } from '../modules/cloud-storage-func';
 
-const router = new Router();
+const router = new Router({
+    prefix : '/usdz2glb',
+});
 
-const usdz2glb = router.post('/usdz2glb', async (ctx: any, next: Next) => {
+const usdz2glb = router.post('/', async (ctx: any, next: Next) => {
     try {
         const usdzFilePath = ctx.request.files.file.filepath; // 업로드하는 파일의 경로
         const usdzFileName = ctx.request.files.file.originalFilename; // 업로드하는 usdz 파일 이름
@@ -47,6 +49,7 @@ const usdz2glb = router.post('/usdz2glb', async (ctx: any, next: Next) => {
                 }
                 exec('sh clearTmp.sh');
             }
+            await next();
         }).catch((stderr) => {
             console.log(stderr.toString());
             ctx.status = 500;
