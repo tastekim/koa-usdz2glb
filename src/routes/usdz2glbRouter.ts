@@ -34,10 +34,11 @@ const usdz2glb = router.post('/usdz2glb', async (ctx: any, next: Next) => {
                 console.log(data.toString());
                 ctx.status = 200;
                 ctx.response.body = { message : 'Ok.' };
+                console.log(`${usdzFileName} converted.`);
                 const glbFilePath = `${process.env.SAVEPATH}${glbFileName}`;
                 await uploadFile(`${convertName[0]}/${glbFileName}`, glbFilePath);
                 await uploadFile(`${convertName[0]}/${usdzFileName}`, usdzFilePath);
-                // exec('sh clearTmp.sh');
+                exec('sh clearTmp.sh');
             }
         }).catch((stderr) => {
             console.log(stderr.toString());
