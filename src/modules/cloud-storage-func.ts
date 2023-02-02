@@ -1,4 +1,5 @@
 import { storage } from '../repositories/cloudstorage';
+import { setData } from './firestore-func';
 const saveDataBucketName: any = process.env.BUCKET_NAME;
 
 export async function uploadFile(newFileName: string, filePath: string) {
@@ -38,4 +39,18 @@ export async function getProductFile(productName: string) {
         prefix : `${productName}/`,
     });
     return [glb.metadata.name, usdz.metadata.name];
+}
+
+//
+export async function createDoc(fileName: string) {
+    try {
+        const [glbFile, usdzFile] = await getProductFile(fileName);
+        const [glbUrl] = await getFileUrl(glbFile);
+        const [usdzUrl] = await getFileUrl(usdzFile);
+        return await setData(fileName, glbUrl, usdzUrl)
+    } catch (err) {
+        if (err instanceof Error) {
+            return err;
+        }
+    }
 }

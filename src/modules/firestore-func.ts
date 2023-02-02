@@ -3,16 +3,15 @@ import WriteResult = firestore.WriteResult;
 import { db } from '../repositories/firestore';
 
 // 상품명으로 객체화해서 DB 저장
-export async function setData(productName: string, productDesc: string, glbUrl: string, usdzUrl: string) {
+export async function setData(productName: string, glbUrl: string, usdzUrl: string) {
     try {
         const collection = db.collection('products');
         const docRef = collection.doc();
         return await docRef.set({
             name : productName,
-            desc : productDesc,
             glb_url : glbUrl,
             usdz_url : usdzUrl,
-            created_at : Date.now(),
+            created_at : new Date(),
         });
 
     } catch (err: unknown) {

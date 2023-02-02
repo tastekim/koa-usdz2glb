@@ -2,7 +2,7 @@ import { Context, Next } from 'koa';
 import koaBody from 'koa-body';
 import Router from '@koa/router';
 import { spawn, exec } from 'child_process';
-import { uploadFile } from '../modules/cloud-storage-func';
+import { createDoc, uploadFile } from '../modules/cloud-storage-func';
 
 const router = new Router();
 
@@ -38,6 +38,13 @@ const usdz2glb = router.post('/usdz2glb', async (ctx: any, next: Next) => {
                 const glbFilePath = `${process.env.SAVEPATH}${glbFileName}`;
                 await uploadFile(`${convertName[0]}/${glbFileName}`, glbFilePath);
                 await uploadFile(`${convertName[0]}/${usdzFileName}`, usdzFilePath);
+                const result = await createDoc(convertName[0]);
+                if (result instanceof Error) {
+                    console.error(result.message);
+                    console.error(result.stack);
+                } else {
+                    console.log(`[Firestore] : ${convertName[0]} created.`);
+                }
                 exec('sh clearTmp.sh');
             }
         }).catch((stderr) => {
