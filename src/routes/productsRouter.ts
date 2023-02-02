@@ -12,6 +12,7 @@ const productsRouter = router.get('/', async (ctx: any, next: Next) => {
         const dataList = await getAllData();
         ctx.status = 200;
         ctx.response.body = { dataList };
+        console.log(`request /products getAllData Success.`)
         await next();
     } catch (err) {
         if (err instanceof Error) {
