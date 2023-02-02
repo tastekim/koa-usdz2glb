@@ -1,5 +1,6 @@
 import { firestore } from 'firebase-admin';
 import WriteResult = firestore.WriteResult;
+import '../repositories/firestore';
 import { db } from '../repositories/firestore';
 
 // 상품명으로 객체화해서 DB 저장
