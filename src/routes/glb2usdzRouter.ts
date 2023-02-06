@@ -22,9 +22,23 @@ const glb2usdz = router.post('/', async (ctx: any, next: Next) => {
         const convertName = glbFileName.split('.');
         convertName[1] = 'usdz';
         const usdzFileName = convertName.join('.');
+        const gcsGlbFilePath = `${convertName[0]}/${glbFileName}`;
+        const gcsUsdzFilePath = `${convertName[0]}/${usdzFileName}`;
+
+        // form-data 로 받은 데이터 GCS 에 업로드
+        const result: unknown = await uploadFile(gcsGlbFilePath, glbFilePath);
+        if (result instanceof Error) {
+            ctx.status = 400;
+            console.log(result.stack);
+            ctx.throw(result.message);
+        }
+        console.log(`[Cloud Storage] : ${glbFileName} uploaded successfully`);
+
+        // 업로드된 파일의 다운로드 url을 return
+        const [uploadFileUrl] = await getFileUrl(gcsGlbFilePath);
 
         // temp 폴더에 uploadFileUrl 로 glb 파일을 받은 후 그 파일로 usdz 파일 변환해서 temp 폴더에 저장 => 파라미터만 넘기면 되는데 넘겼다.... 파라미터 나누는 공백이 빠져 있었나보다.
-        const execCommand = `sh ./glb2usdz.sh ${usdzFileName} ${glbFilePath}`;
+        const execCommand = `sh ./glb2usdz.sh ${usdzFileName} ${glbFileName} ${uploadFileUrl}`;
 
         // 자식 프로세스가 종료되면 콜백이 실행되는데 로그가 찍히는 순서를 보면 이 친구 콜백에 있는 로그가 가장 마지막에 찍힘.
         await new Promise((resolve, reject) => {
@@ -43,8 +57,8 @@ const glb2usdz = router.post('/', async (ctx: any, next: Next) => {
             ctx.response.body = { message : 'glb file upload' };
             console.log(`${glbFileName} converted.`);
             const usdzFilePath = `${process.env.SAVEPATH_MAC}${usdzFileName}`;
-            await uploadFile(`${convertName[0]}/${glbFileName}`, glbFilePath);
-            await uploadFile(`${convertName[0]}/${usdzFileName}`, usdzFilePath);
+            await uploadFile(gcsGlbFilePath, glbFilePath);
+            await uploadFile(gcsUsdzFilePath, usdzFilePath);
             const result = await createDoc(convertName[0]);
             if (result instanceof Error) {
                 console.error(result.message);
