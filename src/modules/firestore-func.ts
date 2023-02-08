@@ -2,6 +2,7 @@ import { firestore } from 'firebase-admin';
 import WriteResult = firestore.WriteResult;
 import '../repositories/firestore';
 import { db } from '../repositories/firestore';
+import { deleteObject } from './cloud-storage-func';
 
 // 상품명으로 객체화해서 DB 저장
 export async function setData(productName: string, glbUrl: string, usdzUrl: string) {
@@ -71,8 +72,12 @@ export async function deleteData(productId: string) {
     try {
         const collection = db.collection('products');
         const docRef = collection.doc(productId);
-        const doc = await docRef.get();
+        const doc: any = await docRef.get();
         if (!doc.exists) {
+            throw new Error('Product does not exist');
+        }
+        const docDeleteResult = await deleteObject(doc.data().name);
+        if (typeof docDeleteResult !== 'undefined') {
             throw new Error('Product does not exist');
         }
         return await docRef.delete()

@@ -1,5 +1,6 @@
 import { storage } from '../repositories/cloudstorage';
 import { setData } from './firestore-func';
+
 const saveDataBucketName: any = process.env.BUCKET_NAME;
 
 export async function uploadFile(newFileName: string, filePath: string) {
@@ -22,32 +23,61 @@ export async function uploadFile(newFileName: string, filePath: string) {
 
 }
 
+// bucket 객체 삭제
+export async function deleteObject(fileName: string) {
+    try {
+        await storage.bucket(saveDataBucketName).file(`${fileName}/${fileName}.glb`).delete();
+        await storage.bucket(saveDataBucketName).file(`${fileName}/${fileName}.usdz`).delete();
+    } catch (err) {
+        if (err instanceof Error) {
+            console.error(err);
+            return err;
+        }
+    }
+}
+
+
 // Cloud Storage 에 있는 파일에 접근하는 경로 가져오기
 export async function getFileUrl(fileName: string) {
-    const bucket = storage.bucket(saveDataBucketName);
-    const file = bucket.file(fileName);
-    return await file.getSignedUrl({
-        action : 'read',
-        expires : Date.now() + Date.now(),
-    });
+    try {
+        const bucket = storage.bucket(saveDataBucketName);
+        const file = bucket.file(fileName);
+        return await file.getSignedUrl({
+            action : 'read',
+            expires : Date.now() + Date.now(),
+        });
+    } catch (err) {
+        if (err instanceof Error) {
+            console.error(err);
+            return err;
+        }
+    }
 }
 
 // productName 으로 glb, usdz 파일 경로 가져오기
 export async function getProductFile(productName: string) {
-    const bucket = storage.bucket(saveDataBucketName);
-    const [[glb, usdz]]: any = await bucket.getFiles({
-        prefix : `${productName}/`,
-    });
-    return [glb.metadata.name, usdz.metadata.name];
+    try {
+        const bucket = storage.bucket(saveDataBucketName);
+        const [[glb, usdz]] = await bucket.getFiles({
+            prefix : `${productName}/`,
+        });
+        return [glb.metadata.name, usdz.metadata.name];
+    } catch (err) {
+        if (err instanceof Error) {
+            console.error(err);
+            return err;
+        }
+    }
 }
+
 
 //
 export async function createDoc(fileName: string) {
     try {
-        const [glbFile, usdzFile] = await getProductFile(fileName);
-        const [glbUrl] = await getFileUrl(glbFile);
-        const [usdzUrl] = await getFileUrl(usdzFile);
-        return await setData(fileName, glbUrl, usdzUrl)
+        const [glbFile, usdzFile]: any = await getProductFile(fileName);
+        const [glbUrl]: any = await getFileUrl(glbFile);
+        const [usdzUrl]: any = await getFileUrl(usdzFile);
+        return await setData(fileName, glbUrl, usdzUrl);
     } catch (err) {
         if (err instanceof Error) {
             return err;
