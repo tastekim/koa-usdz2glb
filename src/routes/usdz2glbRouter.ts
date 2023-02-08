@@ -50,7 +50,7 @@ const usdz2glb = router.post('/', async (ctx: any, next: Next) => {
                 exec('sh clearTmp.sh');
             }
         }).catch((stderr) => {
-            console.log(stderr);
+            console.log(stderr.toString());
             ctx.status = 500;
             ctx.response.body = { message : 'failed.' };
         });
