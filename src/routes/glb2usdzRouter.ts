@@ -35,7 +35,7 @@ const glb2usdz = router.post('/', async (ctx: any, next: Next) => {
         console.log(`[Cloud Storage] : ${glbFileName} uploaded successfully`);
 
         // 업로드된 파일의 다운로드 url을 return
-        const [uploadFileUrl]: any = await getFileUrl(gcsGlbFilePath);
+        const [uploadFileUrl, size]: any = await getFileUrl(gcsGlbFilePath);
 
         // temp 폴더에 uploadFileUrl 로 glb 파일을 받은 후 그 파일로 usdz 파일 변환해서 temp 폴더에 저장 => 파라미터만 넘기면 되는데 넘겼다.... 파라미터 나누는 공백이 빠져 있었나보다.
         const execCommand = `sh ./glb2usdz.sh ${usdzFileName} ${glbFileName} ${uploadFileUrl}`;

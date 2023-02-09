@@ -42,10 +42,13 @@ export async function getFileUrl(fileName: string) {
     try {
         const bucket = storage.bucket(saveDataBucketName);
         const file = bucket.file(fileName);
-        return await file.getSignedUrl({
+        const metadata = await file.getMetadata();
+        const size = `${Math.round((Number(metadata[0].size) / 1024 / 1024) * 100) / 100} Mb`;
+        const [url] = await file.getSignedUrl({
             action : 'read',
             expires : Date.now() + Date.now(),
         });
+        return [url, size];
     } catch (err) {
         if (err instanceof Error) {
             console.error(err);
@@ -75,9 +78,9 @@ export async function getProductFile(productName: string) {
 export async function createDoc(fileName: string) {
     try {
         const [glbFile, usdzFile]: any = await getProductFile(fileName);
-        const [glbUrl]: any = await getFileUrl(glbFile);
-        const [usdzUrl]: any = await getFileUrl(usdzFile);
-        return await setData(fileName, glbUrl, usdzUrl);
+        const [glbUrl, glbSize]: any = await getFileUrl(glbFile);
+        const [usdzUrl, usdzSize]: any = await getFileUrl(usdzFile);
+        return await setData(fileName, glbUrl, glbSize, usdzUrl, usdzSize);
     } catch (err) {
         if (err instanceof Error) {
             return err;
