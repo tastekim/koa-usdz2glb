@@ -43,6 +43,7 @@ export async function getFileUrl(fileName: string) {
         const bucket = storage.bucket(saveDataBucketName);
         const file = bucket.file(fileName);
         const metadata = await file.getMetadata();
+        // 파일 용량 MB로 계산 후 소수점 두자리로 반올림
         const size = `${Math.round((Number(metadata[0].size) / 1024 / 1024) * 100) / 100} Mb`;
         const [url] = await file.getSignedUrl({
             action : 'read',
