@@ -52,11 +52,12 @@ const glb2usdz = router.post('/', async (ctx: any, next: Next) => {
             })
                 .on('close', resolve)
                 .on('error', reject);
-        }).then(async () => {
+        }).then(async (data) => {
+            console.log('test : ', data);
             ctx.status = 200;
             ctx.response.body = { message : 'glb file upload' };
             console.log(`${glbFileName} converted.`);
-            const usdzFilePath = `${process.env.SAVEPATH_MAC}${usdzFileName}`;
+            const usdzFilePath = `${process.env.SAVEPATH}${usdzFileName}`;
             await uploadFile(gcsGlbFilePath, glbFilePath);
             await uploadFile(gcsUsdzFilePath, usdzFilePath);
             const result = await createDoc(convertName[0]);

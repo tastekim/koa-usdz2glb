@@ -17,6 +17,7 @@ app.use(cors({
 
 app.use(koaBody({
     multipart : true,
+    formLimit : 300 * 1024 * 1024,
 }));
 
 app.use(usdz2glb.routes()).use(usdz2glb.allowedMethods());
