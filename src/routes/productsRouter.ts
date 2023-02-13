@@ -9,23 +9,6 @@ const router = new Router({
 });
 
 const productsRouter = router
-    .get('/sample', async (ctx: any, next: Next) => {
-        try {
-            const dataList = await getSampleData();
-            ctx.status = 200;
-            ctx.response.body = { dataList };
-            console.log(`request /products getAllData Success.`);
-            await next();
-        } catch (err) {
-            if (err instanceof Error) {
-                ctx.status ??= 500;
-                ctx.response.body = {
-                    message : err.message
-                };
-                console.error(err.stack);
-            }
-        }
-    })
     .get('/', async (ctx: any, next: Next) => {
         try {
             const dataList = await getAllData();

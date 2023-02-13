@@ -6,6 +6,7 @@ import cors from '@koa/cors';
 import { glb2usdz } from './src/routes/glb2usdzRouter';
 import { usdz2glb } from './src/routes/usdz2glbRouter';
 import { productsRouter } from './src/routes/productsRouter';
+import { sampleRouter } from './src/routes/sampleRouter';
 
 const app = new Koa({
     proxy : true,
@@ -23,6 +24,7 @@ app.use(koaBody({
 app.use(usdz2glb.routes()).use(usdz2glb.allowedMethods());
 app.use(glb2usdz.routes()).use(glb2usdz.allowedMethods());
 app.use(productsRouter.routes()).use(productsRouter.allowedMethods());
+app.use(sampleRouter.routes()).use(sampleRouter.allowedMethods());
 
 app.on('error', (err: Error) => {
     console.error(err);
