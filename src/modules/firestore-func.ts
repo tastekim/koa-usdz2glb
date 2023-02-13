@@ -7,7 +7,7 @@ import { deleteObject } from './cloud-storage-func';
 // 상품명으로 객체화해서 DB 저장
 export async function setData(productName: string, glbUrl: string, glbSize: string, usdzUrl: string, usdzSize: string) {
     try {
-        const collection = db.collection('products');
+        const collection = db.collection('samples');
         const docRef = collection.doc();
         return await docRef.set({
             name : productName,
@@ -45,6 +45,26 @@ export async function getData(productId: string) {
         }
     }
 }
+
+// 페어 샘플용 내용 조회
+export async function getSampleData() {
+    try {
+        const collection = db.collection('samples');
+        const docs = await collection.get();
+        let dataArr: object[] = [];
+        docs.forEach((d: any) => {
+            let id = d.id;
+            let data = d.data();
+            dataArr.push({ id, data });
+        });
+        return dataArr;
+    } catch (err: unknown) {
+        if (err instanceof Error) {
+            return err;
+        }
+    }
+}
+
 
 // 데이터 수정
 export async function updateData(newData: any) {
