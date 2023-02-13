@@ -25,6 +25,27 @@ export async function setData(productName: string, glbUrl: string, glbSize: stri
     }
 }
 
+// 상품명으로 객체화해서 Sample DB 저장
+export async function setSampleData(productName: string, glbUrl: string, glbSize: string, usdzUrl: string, usdzSize: string) {
+    try {
+        const collection = db.collection('sample');
+        const docRef = collection.doc();
+        return await docRef.set({
+            name : productName,
+            glb_url : glbUrl,
+            glbSize : glbSize,
+            usdz_url : usdzUrl,
+            usdzSize : usdzSize,
+            created_at : new Date(),
+        });
+
+    } catch (err: unknown) {
+        if (err instanceof Error) {
+            return err;
+        }
+    }
+}
+
 // product 내용 조회
 export async function getData(productId: string) {
     try {
@@ -46,8 +67,29 @@ export async function getData(productId: string) {
     }
 }
 
+// samples 내용 조회
+export async function getSampleData(productId: string) {
+    try {
+        const collection = db.collection('samples');
+        const docRef = collection.doc(productId);
+        const doc = await docRef.get();
+        if (!doc.exists) {
+            throw new Error('Sample does not exist');
+        }
+        const data = doc.data();
+        return {
+            id : doc.id,
+            data : data,
+        };
+    } catch (err: unknown) {
+        if (err instanceof Error) {
+            return err;
+        }
+    }
+}
+
 // 페어 샘플용 내용 조회
-export async function getSampleData() {
+export async function getAllSampleData() {
     try {
         const collection = db.collection('samples');
         const docs = await collection.get();
