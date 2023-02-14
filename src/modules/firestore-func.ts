@@ -28,7 +28,7 @@ export async function setData(productName: string, glbUrl: string, glbSize: stri
 // 상품명으로 객체화해서 Sample DB 저장
 export async function setSampleData(productName: string, glbUrl: string, glbSize: string, usdzUrl: string, usdzSize: string) {
     try {
-        const collection = db.collection('sample');
+        const collection = db.collection('samples');
         const docRef = collection.doc();
         return await docRef.set({
             name : productName,
