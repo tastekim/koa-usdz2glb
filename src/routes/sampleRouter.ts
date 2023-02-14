@@ -1,7 +1,11 @@
 import { Context, Next } from 'koa';
 import koaBody from 'koa-body';
 import Router from '@koa/router';
-import { getSampleData, getAllSampleData } from '../modules/firestore-func';
+import {
+    getSampleData,
+    getAllSampleData,
+    deleteData, deleteSampleData
+} from '../modules/firestore-func';
 import { exec, spawn } from 'child_process';
 import { createSampleDoc, uploadFile } from '../modules/cloud-storage-func';
 
@@ -109,6 +113,31 @@ const sampleRouter = router
             }
         }
     })
+    .delete('/:productId', async (ctx: any, next: Next) => {
+        try {
+            const { productId } = ctx.params;
+            const result = await deleteSampleData(productId);
+            if (result instanceof Error) {
+                ctx.status = 400;
+                ctx.throw(result.message);
+            }
+            ctx.status = 204;
+            ctx.response.body = {
+                success : true
+            };
+            console.log(`sample ${productId} => delete success`);
+            await next();
+        } catch (err) {
+            if (err instanceof Error) {
+                console.log(err.message);
+                console.log(err.stack);
+                ctx.status ??= 500;
+                ctx.response.body = {
+                    message : err.message
+                };
+            }
+        }
+    });
 
 
 export { sampleRouter };

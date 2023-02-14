@@ -153,6 +153,28 @@ export async function deleteData(productId: string) {
     }
 }
 
+// 샘플 데이터 삭제
+export async function deleteSampleData(productId: string) {
+    try {
+        const collection = db.collection('samples');
+        const docRef = collection.doc(productId);
+        const doc: any = await docRef.get();
+        if (!doc.exists) {
+            throw new Error('Sample does not exist');
+        }
+        const docDeleteResult = await deleteObject(doc.data().name);
+        if (typeof docDeleteResult !== 'undefined') {
+            throw new Error('Sample does not exist');
+        }
+        return await docRef.delete()
+            .then((s: WriteResult) => s);
+    } catch (err: unknown) {
+        if (err instanceof Error) {
+            return err;
+        }
+    }
+}
+
 // 데이터 전체 조회
 export async function getAllData() {
     try {
