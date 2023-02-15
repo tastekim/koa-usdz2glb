@@ -84,7 +84,7 @@ const sampleRouter = router
                     ctx.status = 200;
                     ctx.response.body = { message : 'Ok.' };
                     console.log(`${usdzFileName} converted.`);
-                    const glbFilePath = `${process.env.SAVEPATH}${glbFileName}`;
+                    const glbFilePath = `${process.env.SAVEPATH_MAC}${glbFileName}`;
                     await uploadFile(`${convertName[0]}/${glbFileName}`, glbFilePath);
                     await uploadFile(`${convertName[0]}/${usdzFileName}`, usdzFilePath);
                     const result = await createSampleDoc(convertName[0]);
