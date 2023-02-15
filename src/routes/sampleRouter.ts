@@ -56,7 +56,7 @@ const sampleRouter = router
             }
         }
     })
-    .post('/usdsz', async (ctx: any, next: Next) => {
+    .post('/usdz', async (ctx: any, next: Next) => {
         try {
             const usdzFilePath = ctx.request.files.file.filepath;
             const usdzFileName = ctx.request.files.file.originalFilename;
