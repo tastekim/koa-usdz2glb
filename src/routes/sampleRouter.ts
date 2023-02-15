@@ -4,10 +4,11 @@ import Router from '@koa/router';
 import {
     getSampleData,
     getAllSampleData,
-    deleteData, deleteSampleData
-} from '../modules/firestore-func';
+    deleteSampleData
+} from '../modules/sample-firestore-module';
+import { createSampleDoc } from '../modules/sample-cloud-storage-module';
+import { getFileUrl, uploadFile } from '../modules/cloud-storage-module';
 import { exec, spawn } from 'child_process';
-import { createSampleDoc, uploadFile } from '../modules/cloud-storage-func';
 
 const router = new Router({
     prefix : '/sample',
@@ -40,7 +41,7 @@ const sampleRouter = router
                 ctx.throw(productData.message);
             } else {
                 ctx.response.body = productData;
-                console.log(`${productId} found.`);
+                console.log(`Sample ${productId} found.`);
             }
             await next();
         } catch
@@ -55,24 +56,21 @@ const sampleRouter = router
             }
         }
     })
-    .post('/', async (ctx: any, next: Next) => {
+    .post('/usdsz', async (ctx: any, next: Next) => {
         try {
-            const usdzFilePath = ctx.request.files.file.filepath; // 업로드하는 파일의 경로
-            const usdzFileName = ctx.request.files.file.originalFilename; // 업로드하는 usdz 파일 이름
-            console.log('received file: ' + usdzFileName);
+            const usdzFilePath = ctx.request.files.file.filepath;
+            const usdzFileName = ctx.request.files.file.originalFilename;
+            console.log('received sample file: ' + usdzFileName);
 
-            // formdata validation.
             if (usdzFileName.split('.')[1] !== 'usdz') {
                 ctx.status = 400;
                 ctx.throw('Not usdz file.');
             }
 
-            // 확장자가 포함된 파일 이름 문자열에서 확장자 바꾸기 .usdz => .glb
             const convertName = usdzFileName.split('.');
             convertName[1] = 'glb';
             const glbFileName = convertName.join('.');
 
-            // child_process 가 끝난 후에 ctx.response 할 수 있게 Promise 로 실행.
             await new Promise((resolve, reject) => {
                 // usdz to glb Convert
                 const usdz2glbConvertProcess = spawn('python3', ['usdz2glb.py', usdzFilePath, glbFileName]);
@@ -84,7 +82,7 @@ const sampleRouter = router
                     ctx.status = 200;
                     ctx.response.body = { message : 'Ok.' };
                     console.log(`${usdzFileName} converted.`);
-                    const glbFilePath = `${process.env.SAVEPATH_MAC}${glbFileName}`;
+                    const glbFilePath = `${process.env.SAVEPATH_LOCAL}${glbFileName}`;
                     await uploadFile(`${convertName[0]}/${glbFileName}`, glbFilePath);
                     await uploadFile(`${convertName[0]}/${usdzFileName}`, usdzFilePath);
                     const result = await createSampleDoc(convertName[0]);
@@ -92,12 +90,76 @@ const sampleRouter = router
                         console.error(result.message);
                         console.error(result.stack);
                     } else {
-                        console.log(`[Firestore] : ${convertName[0]} sample created.`);
+                        console.log(`[Firestore] : Sample ${convertName[0]} sample created.`);
                     }
                     exec('sh clearTmp.sh');
                 }
             }).catch((stderr) => {
                 console.log(stderr.toString());
+                ctx.status = 500;
+                ctx.response.body = { message : 'failed.' };
+            });
+            await next();
+        } catch (err) {
+            if (err instanceof Error) {
+                ctx.response.status ??= 500;
+                ctx.response.body = {
+                    message : err.message
+                };
+                console.error(err.message);
+                console.error(err.stack);
+            }
+        }
+    })
+    .post('/glb', async (ctx: any, next: Next) => {
+        try {
+            const glbFilePath = ctx.request.files.file.filepath;
+            const glbFileName = ctx.request.files.file.originalFilename;
+            const convertName = glbFileName.split('.');
+            convertName[1] = 'usdz';
+            const usdzFileName = convertName.join('.');
+            const gcsGlbFilePath = `${convertName[0]}/${glbFileName}`;
+            const gcsUsdzFilePath = `${convertName[0]}/${usdzFileName}`;
+
+            const result: unknown = await uploadFile(gcsGlbFilePath, glbFilePath);
+            if (result instanceof Error) {
+                ctx.status = 400;
+                console.log(result.stack);
+                ctx.throw(result.message);
+            }
+            console.log(`[Cloud Storage] : Sample ${glbFileName} uploaded successfully`);
+
+            const [uploadFileUrl, size]: any = await getFileUrl(gcsGlbFilePath);
+            const execCommand = `sh ./glb2usdz.sh ${usdzFileName} ${glbFileName} ${uploadFileUrl}`;
+
+            await new Promise((resolve, reject) => {
+                exec(execCommand, (error, stdout, stderr) => {
+                    if (error) {
+                        console.log(error);
+                    } else {
+                        console.log(stdout);
+                        console.log(stderr);
+                    }
+                })
+                    .on('close', resolve)
+                    .on('error', reject);
+            }).then(async (data) => {
+                console.log('test : ', data);
+                ctx.status = 200;
+                ctx.response.body = { message : 'glb sample file upload' };
+                console.log(`${glbFileName} converted.`);
+                const usdzFilePath = `${process.env.SAVEPATH_LOCAL}${usdzFileName}`;
+                await uploadFile(gcsGlbFilePath, glbFilePath);
+                await uploadFile(gcsUsdzFilePath, usdzFilePath);
+                const result = await createSampleDoc(convertName[0]);
+                if (result instanceof Error) {
+                    console.error(result.message);
+                    console.error(result.stack);
+                } else {
+                    console.log(`[Firestore] : Sample ${convertName[0]} created.`);
+                }
+            }).catch((err) => {
+                console.log(err);
                 ctx.status = 500;
                 ctx.response.body = { message : 'failed.' };
             });

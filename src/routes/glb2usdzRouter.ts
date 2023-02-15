@@ -3,7 +3,7 @@ import {
     createDoc,
     getFileUrl,
     uploadFile
-} from '../modules/cloud-storage-func';
+} from '../modules/cloud-storage-module';
 import koaBody from 'koa-body';
 import { exec } from 'child_process';
 import Router from '@koa/router';
@@ -57,7 +57,7 @@ const glb2usdz = router.post('/', async (ctx: any, next: Next) => {
             ctx.status = 200;
             ctx.response.body = { message : 'glb file upload' };
             console.log(`${glbFileName} converted.`);
-            const usdzFilePath = `${process.env.SAVEPATH_MAC}${usdzFileName}`;
+            const usdzFilePath = `${process.env.SAVEPATH_LOCAL}${usdzFileName}`;
             await uploadFile(gcsGlbFilePath, glbFilePath);
             await uploadFile(gcsUsdzFilePath, usdzFilePath);
             const result = await createDoc(convertName[0]);

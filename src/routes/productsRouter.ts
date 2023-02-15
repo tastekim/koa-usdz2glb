@@ -1,8 +1,8 @@
 import { Context, Next } from 'koa';
 import koaBody from 'koa-body';
 import Router from '@koa/router';
-import { getAllData, getData, deleteData, getSampleData } from '../modules/firestore-func';
-import { getFileUrl } from '../modules/cloud-storage-func';
+import { getAllData, getData, deleteData } from '../modules/firestore-module';
+import { getFileUrl } from '../modules/cloud-storage-module';
 
 const router = new Router({
     prefix : '/products',
