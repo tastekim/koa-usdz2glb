@@ -37,7 +37,7 @@ const usdz2glb = router.post('/', async (ctx: any, next: Next) => {
                 ctx.status = 200;
                 ctx.response.body = { message : 'Ok.' };
                 console.log(`${usdzFileName} converted.`);
-                const glbFilePath = `${process.env.SAVEPATH_LOCAL}${glbFileName}`;
+                const glbFilePath = `${process.env.SAVEPATH}${glbFileName}`;
                 await uploadFile(`${convertName[0]}/${glbFileName}`, glbFilePath);
                 await uploadFile(`${convertName[0]}/${usdzFileName}`, usdzFilePath);
                 const result = await createDoc(convertName[0]);
